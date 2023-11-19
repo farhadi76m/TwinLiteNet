@@ -8,7 +8,28 @@ from tqdm import tqdm
 import os
 import torch.nn as nn
 from const import *
+import torch.nn.functional as F
 
+
+def resize(
+    x: torch.Tensor,
+    size: any or None = None,
+    scale_factor: list[float] or None = None,
+    mode: str = "bicubic",
+    align_corners: bool or None = False,
+) -> torch.Tensor:
+    if mode in {"bilinear", "bicubic"}:
+        return F.interpolate(
+            x,
+            size=size,
+            scale_factor=scale_factor,
+            mode=mode,
+            align_corners=align_corners,
+        )
+    elif mode in {"nearest", "area"}:
+        return F.interpolate(x, size=size, scale_factor=scale_factor, mode=mode)
+    else:
+        raise NotImplementedError(f"resize(mode={mode}) not implemented.")
 
 LOGGING_NAME="custom"
 def set_logging(name=LOGGING_NAME, verbose=True):
@@ -71,7 +92,7 @@ def train(args, train_loader, model, criterion, optimizer, epoch):
         if args.onGPU == True:
             input = input.cuda().float() / 255.0        
         output = model(input)
-        
+        output = (resize(output[0],[256, 256], output[1],[256, 256])
         # target=target.cuda()
         optimizer.zero_grad()
 
@@ -138,6 +159,7 @@ def val(val_loader, model):
         # run the mdoel
         with torch.no_grad():
             output = model(input_var)
+            output = (resize(output[0],[256, 256], output[1],[256, 256])
 
         out_da,out_ll=output
         target_da,target_ll=target
