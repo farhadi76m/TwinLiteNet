@@ -102,13 +102,13 @@ class MyDataset(torch.utils.data.Dataset):
         :param idx: Index of the image file
         :return: returns the image and corresponding label file.
         '''
-        W_=640
-        H_=360
+        W_=256
+        H_=256
         image_name=os.path.join(self.root,self.names[idx])
         
         image = cv2.imread(image_name)
-        label1 = cv2.imread(image_name.replace("images","segments").replace("jpg","png"), 0)
-        label2 = cv2.imread(image_name.replace("images","lane").replace("jpg","png"), 0)
+        label1 = cv2.imread(image_name.replace("images/100k","labels/bdd_seg_gt").replace("jpg","png"), 0)
+        label2 = cv2.imread(image_name.replace("images/100","labels/bdd_lane_gt").replace("jpg","png"), 0)
         if not self.valid:
             if random.random()<0.5:
                 combination = (image, label1, label2)
